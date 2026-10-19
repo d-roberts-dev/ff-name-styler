@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FF Name Styler — Mini Stylish Name Generator for Free Fire</title>
+<meta name="description" content="A tiny free tool that turns your name into stylish Free Fire-ready nicknames, with a live 12-character counter.">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         background: #0d1117; color: #e6edf3; margin: 0; padding: 24px 16px; }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  h1 span { color: #ff5c5c; }
+  p.sub { color: #8b949e; margin: 0 0 20px; font-size: .95rem; }
+  input[type=text] { width: 100%; padding: 14px; font-size: 1.1rem; border-radius: 10px;
+    border: 1px solid #30363d; background: #161b22; color: #fff; outline: none; }
+  input[type=text]:focus { border-color: #ff5c5c; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+          padding: 12px; cursor: pointer; transition: border-color .15s; }
+  .card:hover { border-color: #ff5c5c; }
+  .card .label { font-size: .72rem; color: #8b949e; text-transform: uppercase;
+                 letter-spacing: .06em; margin-bottom: 6px; }
+  .card .out { font-size: 1.15rem; word-break: break-all; min-height: 1.6em; }
+  .card .count { font-size: .78rem; margin-top: 6px; color: #8b949e; }
+  .card .count.over { color: #ff5c5c; font-weight: 700; }
+  .card.copied { border-color: #3fb950; }
+  .note { margin-top: 20px; font-size: .85rem; color: #8b949e; line-height: 1.6; }
+  .note a { color: #58a6ff; }
+  footer { margin-top: 24px; font-size: .8rem; color: #6e7681; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span>FF</span> Name Styler</h1>
+  <p class="sub">Mini stylish-name generator for Free Fire. Type a name, tap a style to copy it. The counter keeps you inside the game's 12-character limit.</p>
+  <input type="text" id="nameInput" placeholder="Type your name…" maxlength="30" autocomplete="off">
+
+  <div class="grid" id="grid"></div>
+
+  <p class="note">Tip: Free Fire nicknames must be 3–12 characters and every symbol counts as one.
+  Styles marked red are too long for the rename box. For 100+ styles, a symbol crate, and
+  guides tested inside the game, see <a href="https://ffnamegenerator.com/">https://ffnamegenerator.com/</a></p>
+
+  <footer>FF Name Styler · MIT License · Not affiliated with Garena</footer>
+</div>
+
+<script>
+const $input = document.getElementById('nameInput');
+const $grid = document.getElementById('grid');
+
+const fw = s => s.replace(/[A-Za-z0-9]/g, c => {
+  const n = c.charCodeAt(0);
+  if (n >= 65 && n <= 90) return String.fromCharCode(0xFF21 + n - 65);
+  if (n >= 97 && n <= 122) return String.fromCharCode(0xFF41 + n - 97);
+  return String.fromCharCode(0xFF10 + n - 48);
+});
+const circled = s => s.replace(/[A-Za-z0-9]/g, c => {
+  const n = c.charCodeAt(0);
+  if (n >= 65 && n <= 90) return String.fromCharCode(0x24B6 + n - 65);
+  if (n >= 97 && n <= 122) return String.fromCharCode(0x24D0 + n - 97);
+  return c === '0' ? '⓪' : String.fromCharCode(0x2460 + n - 49);
+});
+const scMap = {a:'ᴀ',b:'ʙ',c:'ᴄ',d:'ᴅ',e:'ᴇ',f:'ғ',g:'ɢ',h:'ʜ',i:'ɪ',j:'ᴊ',k:'ᴋ',l:'ʟ',m:'ᴍ',n:'ɴ',o:'ᴏ',p:'ᴘ',q:'ʠ',r:'ʀ',s:'ꜱ',t:'ᴛ',u:'ᴜ',v:'ᴠ',w:'ᴡ',x:'x',y:'ʏ',z:'ᴢ'};
+const smallCaps = s => s.replace(/[A-Za-z]/g, c => scMap[c.toLowerCase()] || c);
+const udMap = {a:'ɐ',b:'q',c:'ɔ',d:'p',e:'ǝ',f:'ɟ',g:'ƃ',h:'ɥ',i:'ᴉ',j:'ɾ',k:'ʞ',l:'l',m:'ɯ',n:'u',o:'o',p:'d',q:'b',r:'ɹ',s:'s',t:'ʇ',u:'n',v:'ʌ',w:'ʍ',x:'x',y:'ʎ',z:'z'};
+const upsideDown = s => [...s].reverse().map(c => udMap[c.toLowerCase()] || c).join('');
+
+const styles = [
+  ['Small caps', smallCaps],
+  ['Bubble', circled],
+  ['Wide', fw],
+  ['Upside down', upsideDown],
+  ['Crown frame', x => `꧁${x}꧂`],
+  ['Star tag', x => `★彡${x}彡★`],
+  ['Blade', x => `乂${x}乂`],
+  ['King', x => `♛${x}♛`],
+  ['Brackets', x => `『${x}』`],
+  ['Smile tag', x => `ツ${x}ツ`],
+];
+
+const cards = styles.map(([label, fn]) => {
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.innerHTML = `<div class="label">${label}</div><div class="out"></div><div class="count"></div>`;
+  el.addEventListener('click', () => {
+    const text = el.querySelector('.out').textContent;
+    if (!text) return;
+    const done = () => { el.classList.add('copied'); setTimeout(() => el.classList.remove('copied'), 900); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(done);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done();
+    }
+  });
+  $grid.appendChild(el);
+  return { el, fn };
+});
+
+function render() {
+  const v = $input.value;
+  cards.forEach(({ el, fn }) => {
+    const out = v ? fn(v) : '';
+    const len = [...out].length;
+    el.querySelector('.out').textContent = out || '—';
+    const c = el.querySelector('.count');
+    c.textContent = out ? `${len}/12 characters` : '';
+    c.classList.toggle('over', len > 12);
+  });
+}
+$input.addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
