@@ -1,0 +1,21 @@
+name: Upload to anaconda.org
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ff-name-styler-0.1.0-py_0.conda'
+      - '.github/workflows/upload-anaconda.yml'
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Upload package to anaconda.org
+        uses: anaconda/actions/upload-package@v0.3.1
+        with:
+          token: ${{ secrets.ANACONDA_ORG_TOKEN }}
+          channel: davidluke
+          packages: ./ff-name-styler-0.1.0-py_0.conda
